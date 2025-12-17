@@ -65,12 +65,14 @@ export default function CallbackPage() {
       sessionStorage.removeItem('code_verifier');
 
       // Fetch user info (optional)
-      const userInfoResponse = await fetch('http://localhost:4001/oidc/userinfo', {
+      const userInfoResponse = await fetch('http://localhost:4001/oidc/me', {
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
         },
         credentials: 'include',
       });
+
+      console.log('User info response:', userInfoResponse);
 
       if (userInfoResponse.ok) {
         const userInfo = await userInfoResponse.json();
@@ -79,7 +81,7 @@ export default function CallbackPage() {
       }
 
       // Redirect to protected area or dashboard
-      router.push('/dashboard2'); // or wherever you want to send them
+      router.push('/dashboard'); // or wherever you want to send them
       
     } catch (err: any) {
       setError(err.message || 'Failed to complete authentication');
