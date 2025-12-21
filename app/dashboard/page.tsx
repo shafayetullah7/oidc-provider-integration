@@ -1,54 +1,64 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { userInfo, loading, refreshUserInfo, logout } = useAuth();
 
   useEffect(() => {
-    const checkAuth = () => {
-      const accessToken = sessionStorage.getItem('access_token');
-      const storedUserInfo = sessionStorage.getItem('user_info');
-
-      if (!accessToken) {
-        router.push('/');
-        return;
-      }
-
-      if (storedUserInfo) {
-        try {
-          setUserInfo(JSON.parse(storedUserInfo));
-        } catch (e) {
-          console.error('Failed to parse user info', e);
-        }
-      }
-
-      setLoading(false);
-    };
-
-    checkAuth();
+    const accessToken = sessionStorage.getItem('access_token');
+    if (!accessToken) {
+      router.push('/');
+    }
   }, [router]);
+
+  const testVlifeAccess = async () => {
+    const accessToken = sessionStorage.getItem('access_token');
+    try {
+      const response = await fetch('http://localhost:4001/test/protected', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      alert(`vLife API Response: ${JSON.stringify(data, null, 2)}`);
+    } catch (err: any) {
+      alert(`vLife API Error: ${err.message}`);
+    }
+  };
+
+  const testMultiTenantAccess = async (type: 'protected' | 'premium') => {
+    const accessToken = sessionStorage.getItem('access_token');
+    try {
+      const response = await fetch(`http://localhost:4002/test/${type}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      alert(`Multi-Tenant (${type}) Response: ${JSON.stringify(data, null, 2)}`);
+    } catch (err: any) {
+      alert(`Multi-Tenant Error: ${err.message}`);
+    }
+  };
 
   const handleLogout = () => {
     const idToken = sessionStorage.getItem('id_token');
     
-    // Clear session storage
-    sessionStorage.clear();
-
     if (idToken) {
       // Use end_session endpoint (standard OIDC endpoint name)
       const logoutUrl = new URL('http://localhost:4001/oidc/session/end');
       logoutUrl.searchParams.set('id_token_hint', idToken);
       logoutUrl.searchParams.set('post_logout_redirect_uri', 'http://localhost:3000');
       
+      // Clear local state first
+      sessionStorage.clear();
+
       // Redirect to OIDC logout
       window.location.href = logoutUrl.toString();
     } else {
-      // Fallback: just redirect to home
-      router.push('/');
+      logout();
     }
   };
 
@@ -110,6 +120,12 @@ export default function DashboardPage() {
               <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
             </div>
       <div className="flex items-center space-x-4">
+              <button
+                onClick={refreshUserInfo}
+                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Refresh User Info
+              </button>
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -187,6 +203,40 @@ export default function DashboardPage() {
                 <span className="font-medium">Refresh Token:</span>{' '}
                 {sessionStorage.getItem('refresh_token') ? '✅ Present' : '❌ Missing'}
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* API Testing Section */}
+        <div className="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="px-4 py-5 sm:px-6">
+            <h2 className="text-lg leading-6 font-medium text-gray-900">
+              API Access Testing
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Verify your authentication and subscription status across services.
+            </p>
+          </div>
+          <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={testVlifeAccess}
+                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm font-medium"
+              >
+                Test vLife (Auth Only)
+              </button>
+              <button
+                onClick={() => testMultiTenantAccess('protected')}
+                className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm font-medium"
+              >
+                Test Multi-Tenant (Auth Only)
+              </button>
+              <button
+                onClick={() => testMultiTenantAccess('premium')}
+                className="px-4 py-2 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm font-medium"
+              >
+                Test Multi-Tenant (Subscription Required)
+              </button>
             </div>
           </div>
         </div>

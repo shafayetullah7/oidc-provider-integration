@@ -64,22 +64,6 @@ export default function CallbackPage() {
       // Clean up code verifier
       sessionStorage.removeItem('code_verifier');
 
-      // Fetch user info (optional)
-      const userInfoResponse = await fetch('http://localhost:4001/oidc/me', {
-        headers: {
-          Authorization: `Bearer ${tokens.access_token}`,
-        },
-        credentials: 'include',
-      });
-
-      console.log('User info response:', userInfoResponse);
-
-      if (userInfoResponse.ok) {
-        const userInfo = await userInfoResponse.json();
-        console.log('User info:', userInfo);
-        sessionStorage.setItem('user_info', JSON.stringify(userInfo));
-      }
-
       // Redirect to protected area or dashboard
       router.push('/dashboard'); // or wherever you want to send them
       

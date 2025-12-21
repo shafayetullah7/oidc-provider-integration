@@ -23,15 +23,39 @@ export default function Home() {
     window.location.href = authUrl.toString();
   };
 
+  const testVlifeAccess = async () => {
+    try {
+      const response = await fetch('http://localhost:4001/test/protected', {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Success: ${JSON.stringify(data)}`);
+      } else {
+        const error = await response.json().catch(() => ({ message: response.statusText }));
+        alert(`Error ${response.status}: ${error.message || 'Unauthorized'}`);
+      }
+    } catch (err: any) {
+      alert(`Network Error: ${err.message}`);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50">
-      <main className="flex flex-col items-center justify-center p-16 bg-white rounded-lg shadow">
-        <h1 className="text-2xl font-bold mb-8">Welcome</h1>
+      <main className="flex flex-col items-center justify-center p-16 bg-white rounded-lg shadow space-y-4">
+        <h1 className="text-2xl font-bold mb-4">Welcome</h1>
         <button 
           onClick={startLogin}
-          className="bg-blue-600 text-white px-10 py-3 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-10 py-3 rounded hover:bg-blue-700 w-full"
         >
           Login with OAuth
+        </button>
+        <button 
+          onClick={testVlifeAccess}
+          className="bg-zinc-200 text-zinc-800 px-10 py-3 rounded hover:bg-zinc-300 w-full"
+        >
+          Test vLife Access (No Login)
         </button>
       </main>
     </div>
