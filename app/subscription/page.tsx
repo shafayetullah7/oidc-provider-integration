@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Package,
   CreditCard,
@@ -94,6 +95,9 @@ type ApiResponse<T> = {
 };
 
 export default function SubscriptionPage() {
+  const searchParams = useSearchParams();
+  const uid = searchParams.get("uid");
+
   const [packages, setPackages] = useState<SubscriptionPackage[]>([]);
   const [userSubscriptions, setUserSubscriptions] = useState<
     UserSubscription[]
@@ -193,7 +197,17 @@ export default function SubscriptionPage() {
         throw new Error(data.message || `Subscription failed: ${res.status}`);
       }
 
-      setSuccess("Subscription successful! Your plan is now active.");
+      if (uid) {
+        setSuccess(
+          "Subscription successful! Redirecting you back to the login flow..."
+        );
+        setTimeout(() => {
+          window.location.href = `http://localhost:4001/oauth/interaction/${uid}/confirm-subscription`;
+        }, 2000);
+      } else {
+        setSuccess("Subscription successful! Your plan is now active.");
+      }
+
       setShowConfirmation(false);
 
       // Refresh subscriptions

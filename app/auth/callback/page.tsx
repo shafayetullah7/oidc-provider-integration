@@ -30,7 +30,7 @@ export default function CallbackPage() {
 
   const exchangeCodeForToken = async (code: string, codeVerifier: string) => {
     try {
-      const response = await fetch("http://localhost:4001/oidc/token", {
+      const response = await fetch("http://localhost:4001/oauth/token", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

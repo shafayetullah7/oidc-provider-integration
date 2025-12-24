@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 
 interface AuthContextType {
   userInfo: any;
@@ -16,7 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshUserInfo = useCallback(async () => {
-    const accessToken = sessionStorage.getItem('access_token');
+    const accessToken = sessionStorage.getItem("access_token");
     if (!accessToken) {
       setUserInfo(null);
       setLoading(false);
@@ -25,24 +31,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:4001/oidc/me', {
+      const response = await fetch("http://localhost:4001/oauth/me", {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (response.ok) {
         const data = await response.json();
         setUserInfo(data);
       } else {
-        console.error('Failed to fetch user info:', response.status);
-        // If token is invalid, we might want to clear it, 
+        console.error("Failed to fetch user info:", response.status);
+        // If token is invalid, we might want to clear it,
         // but for now let's just null the user info
         setUserInfo(null);
       }
     } catch (err) {
-      console.error('Error fetching user info:', err);
+      console.error("Error fetching user info:", err);
       setUserInfo(null);
     } finally {
       setLoading(false);
@@ -52,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     sessionStorage.clear();
     setUserInfo(null);
-    window.location.href = '/';
+    window.location.href = "/";
   }, []);
 
   useEffect(() => {
@@ -60,7 +66,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUserInfo]);
 
   return (
-    <AuthContext.Provider value={{ userInfo, loading, refreshUserInfo, logout }}>
+    <AuthContext.Provider
+      value={{ userInfo, loading, refreshUserInfo, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -69,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

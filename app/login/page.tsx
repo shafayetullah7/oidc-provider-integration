@@ -11,73 +11,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    if (!uid) {
-      setError("No interaction ID found");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `http://localhost:4001/oidc/interaction/${uid}/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          redirect: "manual", // CRITICAL: Don't auto-follow redirects
-          body: JSON.stringify({ email, password }),
-        }
-      );
-
-      // Check if backend returned a redirect (status 302/303)
-      if (response.type === "opaqueredirect" || response.status === 0) {
-        // finishInteraction sent a redirect back to /oidc/auth
-        // We need to manually navigate there to continue the OAuth flow
-        window.location.href = `http://localhost:4001/oidc/auth/${uid}`;
-        return;
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Login failed");
-      }
-
-      // If no redirect, something might be wrong
-      console.warn("Expected redirect after login, but got:", response.status);
-    } catch (err: any) {
-      setError(err.message || "Login failed");
-      setLoading(false);
-    }
-  };
-
-  // const handleSubmit = () => {
-  //   const form = document.createElement("form");
-  //   form.method = "POST";
-  //   form.action = `http://localhost:4001/oidc/interaction/${uid}/login`;
-
-  //   form.appendChild(
-  //     Object.assign(document.createElement("input"), {
-  //       name: "email",
-  //       value: email,
-  //     })
-  //   );
-
-  //   form.appendChild(
-  //     Object.assign(document.createElement("input"), {
-  //       name: "password",
-  //       type: "password",
-  //       value: password,
-  //     })
-  //   );
-
-  //   document.body.appendChild(form);
-  //   form.submit();
-  // };
+  // We use form action instead of fetch to allow native browser redirects
+  // (e.g. to subscription page or back to OAuth flow)
+  const actionUrl = `http://localhost:4001/oauth/interaction/${uid}/login`;
 
   if (!uid) {
     return (
@@ -108,19 +44,19 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form method="POST" action={actionUrl}>
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium mb-2">
               Email
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
-              disabled={loading}
             />
           </div>
 
@@ -133,21 +69,20 @@ export default function LoginPage() {
             </label>
             <input
               id="password"
+              name="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
-              disabled={loading}
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading}
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
           >
-            {loading ? "Logging in..." : "Login"}
+            Login
           </button>
         </form>
       </div>

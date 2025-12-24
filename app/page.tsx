@@ -8,24 +8,55 @@ export default function Home() {
     const codeChallenge = await generateCodeChallenge(codeVerifier);
 
     // Generate state for CSRF protection
-    const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const state =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
 
     // Store verifier and state for later use in callback
     sessionStorage.setItem("code_verifier", codeVerifier);
     sessionStorage.setItem("auth_state", state);
 
     // Build OAuth authorization URL
-    const authUrl = new URL("http://localhost:4001/oidc/auth");
-    authUrl.searchParams.set("client_id", "partner-dashboard-local-2");
+    // const authUrl = new URL("http://localhost:4001/oauth/auth");
+    // authUrl.searchParams.set("client_id", "partner-dashboard-local-2");
+    // authUrl.searchParams.set(
+    //   "redirect_uri",
+    //   "http://localhost:3000/auth/callback"
+    // );
+
+    // // authUrl.searchParams.set(
+    // //   "redirect_uri",
+    // //   "exp://192.168.10.101:8081/callback"
+    // // );
+    // authUrl.searchParams.set(
+    //   "post_logout_redirect_uris",
+    //   "http://localhost:3000"
+    // );
+    // authUrl.searchParams.set("scope", "openid profile email offline_access");
+    // authUrl.searchParams.set("response_type", "code");
+    // authUrl.searchParams.set("state", state);
+    // authUrl.searchParams.set("code_challenge", codeChallenge);
+    // authUrl.searchParams.set("code_challenge_method", "S256");
+    // authUrl.searchParams.set("prompt", "login");
+
+    const authUrl = new URL("http://localhost:4001/oauth/auth");
+    authUrl.searchParams.set("client_id", "vlife-test-mobile-app");
+    authUrl.searchParams.set("redirect_uri", "com.vlifebiz.mobile://callback");
+
+    // authUrl.searchParams.set(
+    //   "redirect_uri",
+    //   "exp://192.168.10.101:8081/callback"
+    // );
     authUrl.searchParams.set(
-      "redirect_uri",
-      "http://localhost:3000/auth/callback"
+      "post_logout_redirect_uris",
+      "exp://192.168.10.101:8081"
     );
     authUrl.searchParams.set("scope", "openid profile email offline_access");
     authUrl.searchParams.set("response_type", "code");
     authUrl.searchParams.set("state", state);
     authUrl.searchParams.set("code_challenge", codeChallenge);
     authUrl.searchParams.set("code_challenge_method", "S256");
+    authUrl.searchParams.set("prompt", "login");
 
     // Navigate to OAuth provider (this will redirect to your login page)
     window.location.href = authUrl.toString();

@@ -17,7 +17,7 @@ export default function DashboardLayout({
         <Link href="/dashboard/partners" className="font-medium">
           Partners
         </Link>
-        <Link href="/dashboard/subscriptions" className="font-medium">
+        <Link href="/subscriptions" className="font-medium">
           Subscriptions
         </Link>
       </nav>
